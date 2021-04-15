@@ -15,13 +15,13 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", default="conservation-v2", type=str, help="Environment name", )
 parser.add_argument("--study-name", default='study', type=str, help="Study name")
-parser.add_argument("-a", type=str, default="ppo", help="Algorithm")
+parser.add_argument("-a", "--algorithm", type=str, default="ppo", help="Algorithm (e.g. \'sac\', \'ppo\')")
 parser.add_argument("--n-timesteps", type=int, default=int(1e1),
                     help="Number of time steps for trainng")
 parser.add_argument("--n-trials", type=int, default=int(25),
                     help="Number of tuning trials")
 args = parser.parse_args()
-args.a = args.a.lower()
+args.algorithm = args.algorithm.lower()
 
 # Handling the different parameter functions and models
 algo_utils = {"ppo": (sample_ppo_params, PPO),
@@ -33,13 +33,13 @@ algo_utils = {"ppo": (sample_ppo_params, PPO),
 
 def objective(trial):
     # Getting the hyperparameters to test
-    params,  policy_kwargs = algo_utils[args.a][0](trial)
+    params,  policy_kwargs = algo_utils[args.algorithm][0](trial)
     # Flag to keep track of whether using vectorized environment or not
     # Instatiating the environments
     env = make_vec_env(args.env, n_envs=params['n_envs'])
     params.pop('n_envs')
     # Instatiating model and performing training
-    model = algo_utils[args.a][1]("MlpPolicy", env, verbose=0,
+    model = algo_utils[args.algorithm][1]("MlpPolicy", env, verbose=0,
                                   policy_kwargs=policy_kwargs, **params)
     model.learn(total_timesteps=int(args.n_timesteps))
     # Evaluating the agent and reporting the mean cumulative reward
@@ -62,7 +62,8 @@ if __name__ == "__main__":
     study = optuna.create_study(study_name=args.study_name, sampler=sampler,
                                 direction='maximize', storage=storage_name,
                                 load_if_exists=True)
-    study.optimize(objective, n_trials=25)
+    study.optimize(objective, n_trials=args.n_trials)
+    study.set_system_attr("algorithm", args.algorithm)
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
