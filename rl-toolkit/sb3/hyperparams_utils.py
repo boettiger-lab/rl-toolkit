@@ -87,6 +87,7 @@ def sample_sac_params(trial):
         'ent_coef': trial.suggest_loguniform('ent_coef', 1e-5, 1),
         'net_arch': trial.suggest_categorical('net_arch', ['small', 'med', 'large']),
         'log_std_init': trial.suggest_loguniform('log_std_init', 1e-3, 1e0),
+        'n_envs': 1,
     }
     # Mapping `net_arch` to actual network architectures
     net_arch = {
@@ -118,6 +119,7 @@ def sample_td3_params(trial):
         'noise_std': trial.suggest_uniform('noise_std', 0, 0.2),
         'noise_type': trial.suggest_categorical('noise_type', ['Normal',
                                                                'Ornstein']),
+        'n_envs': 1,
     }
     # Mapping net_arch to actual network architectures for SB
     net_arch = {
@@ -153,6 +155,7 @@ def sample_ddpg_params(trial):
         'noise_std': trial.suggest_uniform('noise_std', 0, 0.2),
         'noise_type': trial.suggest_categorical('noise_type', ["Normal",
                                                                "Ornstein"]),
+        'n_envs': 1,
     }
     # Mapping net_arch to actual network architectures for SB
     net_arch = {
