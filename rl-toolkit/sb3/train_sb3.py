@@ -34,7 +34,7 @@ algo_utils = {"ppo": PPO,
               "ddpg": DDPG,
               "td3": TD3,
               "sac": SAC,
-              "a2c": A2C, }
+              "a2c": A2C,}
 
 
 def main():

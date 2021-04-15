@@ -20,6 +20,8 @@ parser.add_argument("--n-timesteps", type=int, default=int(1e1),
                     help="Number of time steps for trainng")
 parser.add_argument("--n-trials", type=int, default=int(25),
                     help="Number of tuning trials")
+parser.add_argument("--n-eval-episodes", type=int, default=int(10),
+                    help="Number of evaluation episodes")
 args = parser.parse_args()
 args.algorithm = args.algorithm.lower()
 
@@ -43,9 +45,8 @@ def objective(trial):
                                   policy_kwargs=policy_kwargs, **params)
     model.learn(total_timesteps=int(args.n_timesteps))
     # Evaluating the agent and reporting the mean cumulative reward
-    n_eval_episodes = 15
     eval_env = gym.make(args.env)
-    eval_df = simulate_mdp_vec(env, eval_env, model, n_eval_episodes)
+    eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
     mean_rew = eval_df.groupby(['rep']).sum().mean(axis=0)['reward']
 
     return mean_rew
