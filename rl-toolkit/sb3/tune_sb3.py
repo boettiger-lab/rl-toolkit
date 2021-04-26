@@ -55,7 +55,9 @@ def objective(trial):
 if __name__ == "__main__":
     if not os.path.exists('studies'):
         os.makedirs('studies')
-    print("Active GPU Device: ", torch.cuda.current_device())
+    # Fix this so it works in general case
+    if torch.cuda.is_available():
+        print("Active GPU Device: ", torch.cuda.current_device())
     # Creating an Optuna study that uses sqlite
     storage_name = f"sqlite:///studies/{args.study_name}.db"
     # Sampling from hyperparameters using TPE over 50 trials
