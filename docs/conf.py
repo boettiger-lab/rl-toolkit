@@ -45,13 +45,13 @@ MOCK_MODULES = []
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Read version from file
-version_file = os.path.join(os.path.dirname(__file__), "../gym_wildfire", "version.txt")
+version_file = os.path.join(os.path.dirname(__file__), "../rl-toolkit", "version.txt")
 with open(version_file, "r") as file_handler:
     __version__ = file_handler.read().strip()
 
 # -- Project information -----------------------------------------------------
 
-project = "Wildfire Gym"
+project = "RL Toolkit"
 copyright = "2021, Carl Boettiger"
 author = "Carl Boettiger"
 
