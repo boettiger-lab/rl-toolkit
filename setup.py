@@ -7,6 +7,8 @@ setup(
     packages=find_packages(exclude=["docs", "scripts", "tests"]),
     install_requires=[
         "gym",
+        "gym_fishing",
+        "gym_conservation",
         "numpy",
         "pandas",
         "matplotlib",

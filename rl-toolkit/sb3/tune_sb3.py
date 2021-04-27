@@ -2,8 +2,8 @@ import argparse
 import os
 
 import gym
-
-# import **PUT GYM OF INTEREST HERE**
+import gym_conservation
+import gym_fishing
 import optuna
 import torch
 from hyperparams_utils import (
