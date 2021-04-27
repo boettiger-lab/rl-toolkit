@@ -1,16 +1,4 @@
-import gym
-import gym_fishing
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from gym_fishing.envs.shared_env import plot_mdp, simulate_mdp
-from stable_baselines import PPO2
-from stable_baselines.common import make_vec_env
-from stable_baselines.common.evaluation import evaluate_policy
-from stable_baselines.common.policies import LstmPolicy
-
-matplotlib.use("pdf")
 
 
 def df_entry_vec(df, env, rep, obs, action, reward, t):
@@ -22,10 +10,10 @@ def df_entry_vec(df, env, rep, obs, action, reward, t):
 
 
 def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
-    # A big issue with evaluating a vectorized environment is that SB automatically
-    # resets an environment after a done flag.
-    # To workaround this I have a single evaluation environment that I run
-    # in parallel to the vectorized env.
+    # A big issue with evaluating a vectorized environment is that
+    # SB automatically resets an environment after a done flag.
+    # To workaround this I have a single evaluation environment that
+    # I run in parallel to the vectorized env.
     reps = int(n_eval_episodes)
     df = pd.DataFrame(columns=["time", "state", "action", "reward", "rep"])
     for rep in range(reps):
@@ -47,22 +35,14 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
             obs, reward, done, info = env.step(action)
             # Stepping the eval env along with the vec env
             e_obs, e_reward, e_done, e_info = eval_env.step(action[0])
-            # Passing the evaluation env in for the first vec env's observations.
-            # This is to avoid automatic resetting when `done=True` which is a constraint of
-            # vectorized environments. Unfortunately, a recurrent trained agent
-            # must be evaluated on the number of vectorized envs it was trained on.
+            # Passing the evaluation env in for the first vec env's
+            # observations. This is to avoid automatic resetting when
+            # `done=True` which is a constraint of vectorized environments.
+            # Unfortunately, a recurrent trained agent must be evaluated on
+            # the number of vectorized envs it was trained on.
             obs[0] = e_obs
             if e_done:
                 break
         df = df_entry_vec(df, env, rep, obs, action, reward, t)
 
     return df
-
-
-if __name__ == "__main__":
-    model = PPO2.load("trash_model.zip")
-    env = make_vec_env("fishing-v1", n_envs=4)
-    eval_env = gym.make("fishing-v1")
-    plot_mdp(
-        env, simulate_mdp_vec(env, eval_env, model, 12), output="trash.png"
-    )

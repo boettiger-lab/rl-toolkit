@@ -1,20 +1,18 @@
 import argparse
 
 import gym
-import gym_conservation
-import gym_fishing
+
+# import **GYM OF INTEREST**
 import optuna
 import tensorflow as tf
-from hyperparams_utils import (
+from hyperparams_utils_sb2 import (
     sample_a2c_params,
     sample_acktr_params,
     sample_ppo2_params,
 )
-from optuna.visualization import *
-from simulate_vec import simulate_mdp_vec
+from simulate_vec_sb2 import simulate_mdp_vec
 from stable_baselines import A2C, ACKTR, PPO2
 from stable_baselines.common import make_vec_env
-from stable_baselines.common.policies import LstmPolicy
 
 # To avoid GPU memory hogging by TF
 config = tf.ConfigProto()
@@ -59,7 +57,7 @@ def objective(trial):
     params.pop("n_envs")
     model = algo_utils[1](CustomLSTMPolicy, env, verbose=0, **params)
     model.learn(total_timesteps=args.n_timesteps)
-    # Evaluating the agent and reporting the mean cumulative reward over 20 trials
+    # Evaluating the agent
     eval_env = gym.make(args.env)
     eval_df = simulate_mdp_vec(env, eval_env, model, 20)
     mean_rew = eval_df.groupby(["rep"]).sum().mean(axis=0)["reward"]

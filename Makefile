@@ -10,9 +10,9 @@ type:
 lint:
 	# stop the build if there are Python syntax errors or undefined names
 	# see https://lintlyci.github.io/Flake8Rules/
-	flake8 ${LINT_PATHS} --count --select=E9,F63,F7,F82 --show-source --statistics
+	flake8 ${LINT_PATHS} --count --select=E9,F63,F7,F82 --show-source --statistics 
 	# exit-zero treats all errors as warnings.
-	flake8 ${LINT_PATHS} --count --exit-zero --statistics
+	flake8 ${LINT_PATHS} --count --exit-zero --statistics --ignore=F401
 
 format:
 	# Sort imports
@@ -26,7 +26,7 @@ check-codestyle:
 	# Reformat using black
 	black --check -l 79 ${LINT_PATHS}
 
-commit-checks: format type lint
+commit-checks: format lint
 
 doc:
 	cd docs && make html

@@ -42,7 +42,7 @@ def sample_ppo2_params(trial):
         "med": dict(pi=[256, 256], vf=[256, 256]),
         "large": dict(pi=[400, 400], vf=[400, 400]),
     }[params["net_arch"]]
-    # Creating a custom LSTM policy using some of the hyperparameters selected above
+    # Creating a custom LSTM policy
 
     class CustomLSTMPolicy(LstmPolicy):
         def __init__(
@@ -112,7 +112,7 @@ def sample_a2c_params(trial):
         "med": dict(pi=[256, 256], vf=[256, 256]),
         "large": dict(pi=[400, 400], vf=[400, 400]),
     }[params["net_arch"]]
-    # Creating a custom LSTM policy using some of the hyperparameters selected above
+    # Creating a custom LSTM policy
 
     class CustomLSTMPolicy(LstmPolicy):
         def __init__(
@@ -181,7 +181,7 @@ def sample_acktr_params(trial):
         "med": dict(pi=[256, 256], vf=[256, 256]),
         "large": dict(pi=[400, 400], vf=[400, 400]),
     }[params["net_arch"]]
-    # Creating a custom LSTM policy using some of the hyperparameters selected above
+    # Creating a custom LSTM policy
 
     class CustomLSTMPolicy(LstmPolicy):
         def __init__(
