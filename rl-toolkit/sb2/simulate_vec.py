@@ -1,21 +1,23 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import gym
 import gym_fishing
-from stable_baselines.common.policies import LstmPolicy
-from stable_baselines.common import make_vec_env
-from stable_baselines import PPO2
-from stable_baselines.common.evaluation import evaluate_policy
-from gym_fishing.envs.shared_env import simulate_mdp, plot_mdp
 import matplotlib
-matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from gym_fishing.envs.shared_env import plot_mdp, simulate_mdp
+from stable_baselines import PPO2
+from stable_baselines.common import make_vec_env
+from stable_baselines.common.evaluation import evaluate_policy
+from stable_baselines.common.policies import LstmPolicy
+
+matplotlib.use("pdf")
 
 
 def df_entry_vec(df, env, rep, obs, action, reward, t):
     # Appending entry to the dataframe
-    series = pd.Series([t, obs[0][0], action[0][0],
-                       reward[0], rep], index=df.columns)
+    series = pd.Series(
+        [t, obs[0][0], action[0][0], reward[0], rep], index=df.columns
+    )
     return df.append(series, ignore_index=True)
 
 
@@ -25,7 +27,7 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
     # To workaround this I have a single evaluation environment that I run
     # in parallel to the vectorized env.
     reps = int(n_eval_episodes)
-    df = pd.DataFrame(columns=['time', 'state', 'action', 'reward', 'rep'])
+    df = pd.DataFrame(columns=["time", "state", "action", "reward", "rep"])
     for rep in range(reps):
         # Creating the 2 environments
         e_obs = eval_env.reset()
@@ -57,9 +59,10 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
     return df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = PPO2.load("trash_model.zip")
-    env = make_vec_env('fishing-v1', n_envs=4)
-    eval_env = gym.make('fishing-v1')
-    plot_mdp(env, simulate_mdp_vec(
-        env, eval_env, model, 12), output="trash.png")
+    env = make_vec_env("fishing-v1", n_envs=4)
+    eval_env = gym.make("fishing-v1")
+    plot_mdp(
+        env, simulate_mdp_vec(env, eval_env, model, 12), output="trash.png"
+    )

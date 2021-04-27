@@ -1,9 +1,6 @@
-import gym
-import gym_fishing
-from stable_baselines3 import SAC
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def df_entry(df, env, rep, obs, action, reward, t):
@@ -13,12 +10,12 @@ def df_entry(df, env, rep, obs, action, reward, t):
 
 
 def simulate_mdp(env, model, n_eval_episodes):
-    # A big issue with evaluating a vectorized environment is that SB automatically
-    # resets an environment after a done flag.
+    # A big issue with evaluating a vectorized environment is that
+    # SB automatically resets an environment after a done flag.
     # To workaround this I have a single evaluation environment that I run
     # in parallel to the vectorized env.
     reps = int(n_eval_episodes)
-    df = pd.DataFrame(columns=['time', 'state', 'action', 'reward', 'rep'])
+    df = pd.DataFrame(columns=["time", "state", "action", "reward", "rep"])
     for rep in range(reps):
         # Creating the 2 environments
         obs = env.reset()

@@ -1,7 +1,6 @@
 import gym
-from stable_baselines3.common.env_checker import check_env
-
 import gym_wildfire
+from stable_baselines3.common.env_checker import check_env
 
 
 def test_base_env():
