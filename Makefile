@@ -5,14 +5,16 @@ pytest:
 	./scripts/run_tests.sh
 
 type:
-	pytype -j auto .
+	# Ignoring sb2 due to compatibility issues with python versions
+	pytype -j auto rl-toolkit/sb3/
+	pytype -j auto tests/
 
 lint:
 	# stop the build if there are Python syntax errors or undefined names
 	# see https://lintlyci.github.io/Flake8Rules/
 	flake8 ${LINT_PATHS} --count --select=E9,F63,F7,F82 --show-source --statistics 
 	# exit-zero treats all errors as warnings.
-	flake8 ${LINT_PATHS} --count --exit-zero --statistics --ignore=F401
+	flake8 ${LINT_PATHS} --count --exit-zero --statistics 
 
 format:
 	# Sort imports
@@ -26,7 +28,7 @@ check-codestyle:
 	# Reformat using black
 	black --check -l 79 ${LINT_PATHS}
 
-commit-checks: format lint
+commit-checks: format type lint
 
 doc:
 	cd docs && make html

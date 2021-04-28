@@ -104,6 +104,7 @@ if __name__ == "__main__":
     )
     study.optimize(objective, n_trials=args.n_trials)
     study.set_system_attr("algorithm", args.algorithm)
+    study.set_system_attr("environment", args.environment)
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
