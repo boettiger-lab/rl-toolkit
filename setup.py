@@ -12,10 +12,10 @@ setup(
         "numpy",
         "pandas",
         "matplotlib",
+        "stable_baselines3",
     ],
     extras_require={
         "tests": [
-            "stable-baselines3",
             # Run tests and coverage
             "pytest",
             "pytest-cov",
