@@ -1,11 +1,12 @@
 import optuna
 from optuna.visualization import *
-from hyperparams_utils import *
 
 from simulate_vec_sb2 import simulate_mdp_vec
 from stable_baselines import A2C, ACKTR, PPO2
 from stable_baselines.common import make_vec_env
+from stable_baselines.common.policies import LstmPolicy
 
+import json
 import gym
 import gym_conservation
 import argparse
@@ -42,7 +43,6 @@ parser.add_argument(
     help="Number of evaluation episodes",
     default=20,
 )
-                             help="Number of time steps for trainng")
 args = parser.parse_args()
 
 # Handling the different parameter functions and models
@@ -53,7 +53,7 @@ algo_utils = {
 }
 
 def main():
-  storage_name = f"sqlite:///studies/{args.study_name}.db"
+  storage_name = f"sqlite:///tuning_studies/{args.study_name}.db"
   study = optuna.load_study(study_name=args.study_name, storage=storage_name)
   trial = study.best_trial
   params = trial.params
@@ -69,38 +69,55 @@ def main():
   except:
     env = gym.make(args.env)
   # Constructing the network architecture
+      # Mapping net_arch to actual network architectures for SB
   net_arch = {
-        "small":  dict(pi=[64, 64], qf=[64, 64]),
-        "med": dict(pi=[256, 256], qf=[256, 256]),
-        "large": dict(pi=[400, 400], qf=[400, 400]),
-    }[params['net_arch']]
-  if args.a in ["ppo", "sac", "a2c"]:
-    if args.a in ['ppo', 'a2c']:
-      policy_kwargs = dict(net_arch=[net_arch], log_std_init=params['log_std_init'])
-    else:
-      policy_kwargs = dict(net_arch=net_arch, log_std_init=params['log_std_init'])
-    keys_to_delete = ['net_arch', 'log_std_init']
-  else:
-    policy_kwargs = dict(net_arch=net_arch)
-    keys_to_delete = ['net_arch', 'noise_type', 'noise_std']
-    action_noise = noise_dict[params['noise_type']](mean=np.zeros(1), 
-                                         sigma=params['noise_std']*np.ones(1))
-  if args.a == "ppo":
-    params['n_epochs'] = params['noptepochs']
-    keys_to_delete.append('noptepochs')
-  [params.pop(key) for key in keys_to_delete]
+      "small": dict(pi=[64, 64], vf=[64, 64]),
+      "med": dict(pi=[256, 256], vf=[256, 256]),
+      "large": dict(pi=[400, 400], vf=[400, 400]),
+  }[params["net_arch"]]
+  # Creating a custom LSTM policy
+
+  class CustomLSTMPolicy(LstmPolicy):
+      def __init__(
+          self,
+          sess,
+          ob_space,
+          ac_space,
+          n_env,
+          n_steps,
+          n_batch,
+          n_lstm=params["n_lstm"],
+          reuse=False,
+          **_kwargs
+      ):
+          super().__init__(
+              sess,
+              ob_space,
+              ac_space,
+              n_env,
+              n_steps,
+              n_batch,
+              n_lstm,
+              reuse,
+              net_arch=[100, "lstm", net_arch],
+              layer_norm=True,
+              feature_extraction="mlp",
+              **_kwargs
+          )
+          
+  # Deleting keys that can't be used in SB models
+  import pdb; pdb.set_trace()
+  keys_to_delete = ["batch_size", "n_lstm", "net_arch", "joker"]
+  if "lambda" in params:
+    keys_to_delete.append("lambda")
+    params['lam'] = params['lambda']
+  [params.pop(key) for key in keys_to_delete if key in params]
   # Instatiating model and performing training
-  model = algo_utils[args.a]("MlpPolicy", env, verbose=0, 
-                                 policy_kwargs=policy_kwargs, **params)
+  model = algo_utils[args.algorithm][0](CustomLSTMPolicy, env, verbose=0, **params)
   model.learn(total_timesteps=int(args.n_timesteps))
   # Evaluating the agent and reporting the mean cumulative reward
-  n_eval_episodes = 15
-  if vec:
-      eval_env = gym.make(args.env)
-      eval_df = simulate_mdp_vec(env, eval_env, model, n_eval_episodes)
-  else:
-      eval_df = simulate_mdp(env, model, n_eval_episodes)
-  plot_mdp(eval_df, output=f"trash_{args.study_name}.png")
+  eval_env = gym.make(args.env)
+  eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
 
 if __name__ =="__main__":
   main()
