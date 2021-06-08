@@ -24,7 +24,6 @@ parser.add_argument("-e", "--env", type=str, help="Environment name")
 parser.add_argument("--study-name", type=str, help="Study name")
 parser.add_argument(
     "-a",
-    "-algorithm",
     type=str,
     default="ppo2",
     help="Algorithm (a2c/acktr/ppo2)",
@@ -46,7 +45,7 @@ algo_utils = {
 
 def objective(trial):
     # Training the agent
-    params, CustomLSTMPolicy = algo_utils[args.algorithm][0](trial)
+    params, CustomLSTMPolicy = algo_utils[args.a][0](trial)
     env_kwargs = {
         "Tmax": 50,
         "alpha": 0.01,
@@ -55,7 +54,7 @@ def objective(trial):
         args.env, n_envs=params["n_envs"], env_kwargs=env_kwargs
     )
     params.pop("n_envs")
-    model = algo_utils[1](CustomLSTMPolicy, env, verbose=0, **params)
+    model = algo_utils[args.a][1](CustomLSTMPolicy, env, verbose=0, **params)
     model.learn(total_timesteps=args.n_timesteps)
     # Evaluating the agent
     eval_env = gym.make(args.env)
