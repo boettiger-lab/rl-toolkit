@@ -1,6 +1,10 @@
 import argparse
+import json
+import os
 
 import gym
+import gym_conservation
+import gym_fishing
 
 # import **GYM OF INTEREST**
 import optuna
@@ -14,6 +18,8 @@ from simulate_vec_sb2 import simulate_mdp_vec
 from stable_baselines import A2C, ACKTR, PPO2
 from stable_baselines.common import make_vec_env
 
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 # To avoid GPU memory hogging by TF
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -24,6 +30,7 @@ parser.add_argument("-e", "--env", type=str, help="Environment name")
 parser.add_argument("--study-name", type=str, help="Study name")
 parser.add_argument(
     "-a",
+    "--algorithm",
     type=str,
     default="ppo2",
     help="Algorithm (a2c/acktr/ppo2)",
@@ -33,6 +40,23 @@ parser.add_argument(
     type=int,
     default=int(2e6),
     help="Number of time steps for trainng",
+)
+parser.add_argument(
+    "--env-kwargs",
+    type=json.loads,
+    help="Environment keyword arguments",
+    default={
+        "Tmax": 50,
+    },
+)
+parser.add_argument(
+    "--n-eval-episodes",
+    type=int,
+    help="Number of evaluation episodes",
+    default=20,
+)
+parser.add_argument(
+    "--n-trials", type=int, help="Number of trials", default=25
 )
 args = parser.parse_args()
 
@@ -45,20 +69,19 @@ algo_utils = {
 
 def objective(trial):
     # Training the agent
-    params, CustomLSTMPolicy = algo_utils[args.a][0](trial)
-    env_kwargs = {
-        "Tmax": 50,
-        "alpha": 0.01,
-    }
+    params, CustomLSTMPolicy = algo_utils[args.algorithm][0](trial)
     env = make_vec_env(
-        args.env, n_envs=params["n_envs"], env_kwargs=env_kwargs
+        lambda: gym.make(args.env, **args.env_kwargs),
+        n_envs=params["n_envs"],
     )
     params.pop("n_envs")
-    model = algo_utils[args.a][1](CustomLSTMPolicy, env, verbose=0, **params)
+    model = algo_utils[args.algorithm][1](
+        CustomLSTMPolicy, env, verbose=0, **params
+    )
     model.learn(total_timesteps=args.n_timesteps)
     # Evaluating the agent
     eval_env = gym.make(args.env)
-    eval_df = simulate_mdp_vec(env, eval_env, model, 20)
+    eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
     mean_rew = eval_df.groupby(["rep"]).sum().mean(axis=0)["reward"]
 
     return mean_rew
@@ -77,7 +100,7 @@ if __name__ == "__main__":
         storage=storage_name,
         load_if_exists=True,
     )
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=args.n_trials)
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
