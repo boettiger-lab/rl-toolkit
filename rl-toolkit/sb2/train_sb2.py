@@ -50,6 +50,13 @@ parser.add_argument(
     help="Number of evaluation episodes",
     default=20,
 )
+parser.add_argument(
+    "--file",
+    type=str,
+    help="Name to save model as",
+    default="trash",
+    
+)
 args = parser.parse_args()
 
 # Handling the different parameter functions and models
@@ -68,8 +75,9 @@ def main():
     )
     model.learn(total_timesteps=int(args.n_timesteps))
     # Evaluating the agent and reporting the mean cumulative reward
-    # eval_env = gym.make(args.env)
-    # eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
+    if not os.path.isdir("models/"):
+        os.makedirs("models/")
+    model.save(f"models/{args.file}")
 
 
 if __name__ == "__main__":
