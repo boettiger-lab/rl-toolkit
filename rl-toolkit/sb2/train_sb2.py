@@ -55,7 +55,6 @@ parser.add_argument(
     type=str,
     help="Name to save model as",
     default="trash",
-    
 )
 args = parser.parse_args()
 
