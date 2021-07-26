@@ -5,6 +5,7 @@ import os
 import gym
 import gym_conservation
 import tensorflow as tf
+import yaml
 from stable_baselines import A2C, ACKTR, PPO2
 from train_utils import parse_hyperparams
 
@@ -50,6 +51,12 @@ parser.add_argument(
     help="Number of evaluation episodes",
     default=20,
 )
+parser.add_argument(
+    "--file",
+    type=str,
+    help="Name to save model as",
+    default="trash",
+)
 args = parser.parse_args()
 
 # Handling the different parameter functions and models
@@ -60,6 +67,15 @@ algo_utils = {
 }
 
 
+def save_info(args, params):
+    with open(f"models/{args.file}.yaml", "w") as file:
+        params["environment"] = args.env
+        params["algorithm"] = args.algorithm
+        params["timesteps"] = args.n_timesteps
+        params["environment_kwargs"] = args.env_kwargs
+        documents = yaml.dump(params, file)
+
+
 def main():
     params, CustomLSTMPolicy, env = parse_hyperparams(args)
     # Instatiating model and performing training
@@ -68,8 +84,10 @@ def main():
     )
     model.learn(total_timesteps=int(args.n_timesteps))
     # Evaluating the agent and reporting the mean cumulative reward
-    # eval_env = gym.make(args.env)
-    # eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
+    if not os.path.isdir("models/"):
+        os.makedirs("models/")
+    model.save(f"models/{args.file}")
+    save_info(args, params)
 
 
 if __name__ == "__main__":
