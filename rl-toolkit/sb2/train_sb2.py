@@ -1,10 +1,11 @@
 import argparse
 import json
 import os
-import yaml
+
 import gym
 import gym_conservation
 import tensorflow as tf
+import yaml
 from stable_baselines import A2C, ACKTR, PPO2
 from train_utils import parse_hyperparams
 
@@ -65,13 +66,15 @@ algo_utils = {
     "ppo2": (PPO2,),
 }
 
+
 def save_info(args, params):
-    with open(f"models/{args.file}.yaml", 'w') as file:
-      params["environment"] = args.env
-      params["algorithm"] = args.algorithm
-      params["timesteps"] = args.n_timesteps
-      params["environment_kwargs"] = args.env_kwargs
-      documents = yaml.dump(params, file)
+    with open(f"models/{args.file}.yaml", "w") as file:
+        params["environment"] = args.env
+        params["algorithm"] = args.algorithm
+        params["timesteps"] = args.n_timesteps
+        params["environment_kwargs"] = args.env_kwargs
+        documents = yaml.dump(params, file)
+
 
 def main():
     params, CustomLSTMPolicy, env = parse_hyperparams(args)
