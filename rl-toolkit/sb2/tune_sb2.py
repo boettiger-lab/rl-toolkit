@@ -26,8 +26,12 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--env", type=str, help="Environment name")
-parser.add_argument("--study-name", type=str, help="Study name")
+parser.add_argument(
+    "-e", "--env", type=str, help="Environment name", default="conservation-v6"
+)
+parser.add_argument(
+    "--study-name", type=str, help="Study name", default="trash"
+)
 parser.add_argument(
     "-a",
     "--algorithm",
