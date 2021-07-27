@@ -1,3 +1,5 @@
+import argparse
+
 import gym
 import gym_conservation
 import gym_fishing
@@ -7,8 +9,6 @@ from stable_baselines import A2C, ACKTR, PPO2
 from stable_baselines.common import make_vec_env
 from stable_baselines.common.evaluation import evaluate_policy
 from stable_baselines.common.policies import LstmPolicy
-
-import argparse
 
 # Argument parsing block; for help run `python tune_sb3.py -h`
 parser = argparse.ArgumentParser()
@@ -56,7 +56,9 @@ if __name__ == "__main__":
     env_kwargs = {
         "Tmax": 50,
     }
-    model = algo_utils[args.algorithm.lower()][0].load(f"models/{args.model_name}.zip")
+    model = algo_utils[args.algorithm.lower()][0].load(
+        f"models/{args.model_name}.zip"
+    )
     env = make_vec_env(
         args.environment, n_envs=args.n_envs, env_kwargs=env_kwargs
     )
