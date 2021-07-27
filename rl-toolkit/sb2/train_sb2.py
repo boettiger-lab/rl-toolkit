@@ -76,6 +76,16 @@ def save_info(args, params):
         documents = yaml.dump(params, file)
 
 
+def check_study_args(args):
+    # Not putting this in just yet
+    storage_name = f"sqlite:///tuning_studies/{args.study_name}.db"
+    study = optuna.load_study(study_name=args.study_name, storage=storage_name)
+    if args.env != study.env:
+        print("Warning: Using a different environment than in tuning.")
+    if args.n_timesteps != study.n_timesteps:
+        print("Warning: Training with a different timestep budget.")
+
+
 def main():
     params, CustomLSTMPolicy, env = parse_hyperparams(args)
     # Instatiating model and performing training
