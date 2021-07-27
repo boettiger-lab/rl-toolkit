@@ -26,6 +26,13 @@ parser.add_argument(
     help="Algorithm (a2c/acktr/ppo2)",
 )
 parser.add_argument(
+    "-e",
+    "--environment",
+    type=str,
+    default="conservation-v6",
+    help="Environment to evaluate",
+)
+parser.add_argument(
     "--n-envs",
     type=int,
     help="Number of environments to use in vec env",
@@ -49,7 +56,7 @@ if __name__ == "__main__":
     env_kwargs = {
         "Tmax": 50,
     }
-    model = algo_utils[args.algorithm.lower()][0].load(args.model_name)
+    model = algo_utils[args.algorithm.lower()][0].load(f"models/{args.model_name}.zip")
     env = make_vec_env(
         args.environment, n_envs=args.n_envs, env_kwargs=env_kwargs
     )
