@@ -104,3 +104,7 @@ if __name__ == "__main__":
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
+    study.set_system_attr("algorithm", args.algorithm)
+    study.set_system_attr("environment", args.env)
+    study.set_system_attr("environment kwargs", args.env_kwargs)
+    study.set_system_attr("num of timesteps", args.n_timesteps)
