@@ -44,6 +44,12 @@ parser.add_argument(
     help="Name of image to output",
     default="trash",
 )
+parser.add_argument(
+    "--n-eval-episodes",
+    type=int,
+    default=10,
+    help="Number of evaluation episodes",
+)
 args = parser.parse_args()
 
 algo_utils = {
@@ -65,6 +71,6 @@ if __name__ == "__main__":
     eval_env = gym.make(args.environment, **env_kwargs)
     plot_mdp(
         env,
-        simulate_mdp_vec(env, eval_env, model, 10),
+        simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes),
         output=f"{args.image_name}.png",
     )
