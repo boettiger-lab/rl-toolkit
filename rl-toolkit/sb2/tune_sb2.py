@@ -26,8 +26,12 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--env", type=str, help="Environment name")
-parser.add_argument("--study-name", type=str, help="Study name")
+parser.add_argument(
+    "-e", "--env", type=str, help="Environment name", default="conservation-v6"
+)
+parser.add_argument(
+    "--study-name", type=str, help="Study name", default="trash"
+)
 parser.add_argument(
     "-a",
     "--algorithm",
@@ -104,3 +108,7 @@ if __name__ == "__main__":
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
+    study.set_system_attr("algorithm", args.algorithm)
+    study.set_system_attr("environment", args.env)
+    study.set_system_attr("environment kwargs", args.env_kwargs)
+    study.set_system_attr("num of timesteps", args.n_timesteps)
