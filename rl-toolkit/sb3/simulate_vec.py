@@ -27,14 +27,16 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
         # Initializing variables
         state = None
         done = [False for _ in range(env.num_envs)]
-        action = [[env.action_space.low[0]] for _ in range(env.num_envs)]
+        action = [[0] for _ in range(env.num_envs)]  # Review this
         reward = [0 for _ in range(env.num_envs)]
         t = 0
         while True:
             df = df_entry_vec(df, env, rep, obs, action, reward, t)
             t += 1
             # Using the vec env to do predictions
-            action, state = model.predict(obs, state=state, mask=done)
+            action, state = model.predict(
+                obs, state=state, mask=done, deterministic=True
+            )
             obs, reward, done, info = env.step(action)
             # Stepping the eval env along with the vec env
             e_obs, e_reward, e_done, e_info = eval_env.step(action[0])

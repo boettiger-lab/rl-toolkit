@@ -28,7 +28,7 @@ def simulate_mdp(env, model, n_eval_episodes):
             t += 1
             # Using the vec env to do predictions
             action, state = model.predict(obs)
-            obs, reward, done, info = env.step(action)
+            obs, reward, done, info = env.step(action, determistic=True)
             if done:
                 break
         df = df_entry(df, env, rep, obs, action, reward, t)
