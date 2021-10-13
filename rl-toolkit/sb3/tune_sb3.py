@@ -4,6 +4,7 @@ import os
 import gym
 import gym_conservation
 import gym_fishing
+import gym_climate
 import optuna
 import torch
 from hyperparams_utils import (
@@ -103,8 +104,9 @@ if __name__ == "__main__":
         load_if_exists=True,
     )
     study.optimize(objective, n_trials=args.n_trials)
+    # Saving attributes so we can retrace what is done for a .db
     study.set_system_attr("algorithm", args.algorithm)
-    study.set_system_attr("environment", args.environment)
+    study.set_system_attr("environment", args.env)
     # Reporting best trial and making a quick plot to examine hyperparameters
     trial = study.best_trial
     print(f"Best hyperparams: {trial.params}")
