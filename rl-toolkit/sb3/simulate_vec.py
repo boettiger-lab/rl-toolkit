@@ -27,7 +27,7 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
         # Initializing variables
         state = None
         done = [False for _ in range(env.num_envs)]
-        action = [[env.action_space.low[0]] for _ in range(env.num_envs)]
+        action = [[0] for _ in range(env.num_envs)] # Review this
         reward = [0 for _ in range(env.num_envs)]
         t = 0
         while True:
