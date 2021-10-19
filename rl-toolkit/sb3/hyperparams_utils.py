@@ -115,6 +115,7 @@ def sample_sac_params(trial):
         ),
         "log_std_init": trial.suggest_loguniform("log_std_init", 1e-3, 1e0),
         "n_envs": 1,
+        "seed": trial.suggest_categorical("seed", [2, 8, 16, 24, 32]),
     }
     # Mapping `net_arch` to actual network architectures
     net_arch = {
@@ -216,6 +217,42 @@ def sample_ddpg_params(trial):
     params["action_noise"] = action_noise
     # Deleting keys that can't be used in SB models
     keys_to_delete = ["net_arch", "noise_std", "noise_type"]
+    [params.pop(key) for key in keys_to_delete]
+
+    return params, policy_kwargs
+
+def sample_dqn_params(trial):
+    """
+    Returns hyperparameter dicitonary to be passed to SB model
+    """
+    # Defining hyperparameters to sample over
+    params = {
+        "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1),
+        "gamma": trial.suggest_categorical(
+            "gamma", [0.9, 0.95, 0.99, 0.999, 1]
+        ),
+        "exploration_fraction": trial.suggest_uniform("exploration_fraction", 0, 0.5),
+        "exploration_final_eps": trial.suggest_uniform("exploration_final_eps", 0, 0.2),
+        "net_arch": trial.suggest_categorical(
+            "net_arch", ["small", "med", "large"]
+        ),
+        "n_envs": 1,
+        "target_update_interval": trial.suggest_categorical("target_update_interval", [1, 1000, 5000, 10000, 15000, 20000]),
+        "train_freq": trial.suggest_categorical("train_freq", [1, 4, 8, 16, 128, 256, 1000]),
+        "subsample_steps": trial.suggest_categorical("subsample_steps", [1, 2, 4, 8]),
+    }
+    params["gradient_steps"] = max(params["train_freq"] // params["subsample_steps"], 1)
+    # Mapping net_arch to actual network architectures for SB
+    net_arch = {
+        "small": [64, 64],
+        "med": [256, 256],
+        "large": [400, 400],
+    }[params["net_arch"]]
+    policy_kwargs = dict(
+        net_arch=net_arch
+    )
+    # Deleting keys that can't be used in SB models
+    keys_to_delete = ["net_arch", "train_freq", "subsample_steps"]
     [params.pop(key) for key in keys_to_delete]
 
     return params, policy_kwargs
