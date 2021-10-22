@@ -37,6 +37,7 @@ def simulate_mdp_vec(env, eval_env, model, n_eval_episodes):
             action, state = model.predict(
                 obs, state=state, mask=done, deterministic=True
             )
+            action = np.array(action).reshape(-1, 1)
             obs, reward, done, info = env.step(action)
             # Stepping the eval env along with the vec env
             e_obs, e_reward, e_done, e_info = eval_env.step(action[0])
