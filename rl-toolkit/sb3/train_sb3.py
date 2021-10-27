@@ -2,14 +2,16 @@ import argparse
 import os
 
 import gym
+import gym_climate
 
 # import **PUT GYM OF INTEREST HERE**
+import gym_fishing
 import numpy as np
 import optuna
 import yaml
 from hyperparams_utils import noise_dict
 from simulate_vec import plot_mdp, simulate_mdp_vec
-from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
+from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3, DQN
 from stable_baselines3.common.env_util import make_vec_env
 
 # Argument parsing block; to get help here run `python tune_sb3.py -h`
@@ -37,7 +39,11 @@ parser.add_argument(
     default=int(1e4),
     help="Number of time steps for trainng",
 )
-parser.add_argument("--selected", action="store_true")
+parser.add_argument(
+    "--selected",
+    action="store_true",
+    help="If you use this flag, then hyperparams from `hyperparms/` are used",
+)
 parser.add_argument(
     "--n-eval-episodes",
     default=10,
@@ -66,6 +72,7 @@ algo_utils = {
     "td3": TD3,
     "sac": SAC,
     "a2c": A2C,
+    "dqn": DQN,
 }
 
 
@@ -105,11 +112,18 @@ def main():
     # Handling the network architecture which is passed to the model as
     # policy_kwargs
     if "net_arch" in params:
-        net_arch = {
-            "small": dict(pi=[64, 64], qf=[64, 64]),
-            "med": dict(pi=[256, 256], qf=[256, 256]),
-            "large": dict(pi=[400, 400], qf=[400, 400]),
-        }[params["net_arch"]]
+        if args.algorithm != "dqn":
+            net_arch = {
+                "small": dict(pi=[64, 64], qf=[64, 64]),
+                "med": dict(pi=[256, 256], qf=[256, 256]),
+                "large": dict(pi=[400, 400], qf=[400, 400]),
+            }[params["net_arch"]]
+        else:
+            net_arch = {
+                "small": [64, 64],
+                "med": [256, 256],
+                "large": [400, 400],
+            }[params["net_arch"]]
         if args.algorithm in ["ppo", "a2c"]:
             policy_kwargs = dict(
                 net_arch=[net_arch], log_std_init=params["log_std_init"]
@@ -134,6 +148,13 @@ def main():
     if "noptepochs" in params:
         params["n_epochs"] = params["noptepochs"]
         keys_to_delete.append("noptepochs")
+    # Handling DQN extra hyperparameters for gradient steps
+    if "subsample_steps" in params:
+        params["gradient_steps"] = max(
+            params["train_freq"] // params["subsample_steps"], 1
+        )
+        keys_to_delete.append("train_freq")
+        keys_to_delete.append("subsample_steps")
     # Deleting parameters that will throw errors when unpacked
     [params.pop(key) for key in keys_to_delete]
     # Instatiating model and performing training
@@ -143,13 +164,17 @@ def main():
     model.learn(total_timesteps=int(args.n_timesteps))
     # Saving model if flagged
     if args.save:
-        model.save(f"{args.ouput_name}")
+        if not os.path.exists("models/"):
+            os.mkdir("models/")
+        model.save(f"models/{args.output_name}")
     # Evaluating the agent and reporting the mean cumulative reward
-    eval_env = gym.make(args.env)
-    eval_df = simulate_mdp_vec(env, eval_env, model, args.n_eval_episodes)
     # Plotting if flagged
     if args.plot:
-        plot_mdp(eval_df, output=f"{args.output_name}.png")
+        if not os.path.exists("plots/"):
+            os.mkdir("plots/")
+        eval_env = gym.make(args.env)
+        eval_df = eval_env.simulate_mdp(model)
+        eval_env.plot_mdp(eval_df, output=f"plots/{args.output_name}.png")
 
 
 if __name__ == "__main__":
